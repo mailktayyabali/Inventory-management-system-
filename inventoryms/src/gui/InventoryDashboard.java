@@ -6,171 +6,135 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class InventoryDashboard {
-
     private JFrame frame;
-    private JTable productTable;
-    private JTextField productCodeField, productNameField, dateField, quantityField, costField, sellingField;
-    private JComboBox<String> supplierCombo, brandCombo;
-    private JButton addButton, editButton, deleteButton, refreshButton, clearButton;
-    private String[] columnNames = {"PRODUCTCODE", "PRODUCTNAME", "COSTPRICE", "SELLPRICE", "BRAND"};
-    private Object[][] data = {
-            {"prod1", "Laptop", 85000.0, 90000.0, "Dell"},
-            {"prod2", "Laptop", 70000.0, 72000.0, "HP"},
-            {"prod3", "Mobile", 50000.0, 64000.0, "Apple"},
-            {"prod4", "Mobile", 50000.0, 51000.0, "Samsung"},
-            {"prod5", "Charger", 2000.0, 2100.0, "Dell"},
-            {"prod6", "Mouse", 1700.0, 1900.0, "Dell"},
-            {"prod7", "Power Adapter", 3000.0, 3500.0, "Dell"},
-            {"prod8", "Smart Watch", 15000.0, 17000.0, "Apple"}
-    };
+    private JPanel mainPanel;
+    private JPanel homePanel;
+    private JPanel productPanel;
 
     public InventoryDashboard() {
         frame = new JFrame("Warehouse Inventory Dashboard");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 700);
+        frame.setSize(800, 600);
         frame.setLayout(new BorderLayout());
         frame.setLocationRelativeTo(null); // Center the window
 
         // Left Navigation Panel
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new GridLayout(8, 1));
-        leftPanel.setBackground(new Color(240, 240, 240));
+        leftPanel.setBackground(new Color(230, 220, 250)); // Light purple background
 
         JButton homeButton = new JButton("Home");
         homeButton.setBackground(new Color(200, 200, 255));
         leftPanel.add(homeButton);
 
-        String[] options = {"Products", "Current Stock", "Customers", "Suppliers", "Sales", "Purchase", "Users"};
+        JButton productButton = new JButton("Products");
+        productButton.setBackground(new Color(200, 200, 255));
+        leftPanel.add(productButton);
+
+        String[] options = {"Current Stock", "Customers", "Suppliers", "Sales", "Purchase", "Users"};
         for (String option : options) {
             JButton optionButton = new JButton(option);
+            optionButton.setBackground(new Color(220, 210, 240));
             leftPanel.add(optionButton);
         }
 
         frame.add(leftPanel, BorderLayout.WEST);
 
-        // Center Panel (Content)
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BorderLayout());
+        // Main Panel (Center)
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new CardLayout()); // Use CardLayout for easy switching
+        frame.add(mainPanel, BorderLayout.CENTER);
 
-        // Product Table
-        productTable = new JTable(data, columnNames);
-        JScrollPane tableScrollPane = new JScrollPane(productTable);
-        centerPanel.add(tableScrollPane, BorderLayout.CENTER);
+        // Create Panels
+        createHomePanel();
+        createProductPanel();
 
-        // Search Bar and Refresh Button
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        // Add Panels to Main Panel
+        mainPanel.add(homePanel, "Home");
+        mainPanel.add(productPanel, "Products");
 
-        JTextField searchField = new JTextField(20);
-        topPanel.add(searchField);
-
-        refreshButton = new JButton("Refresh");
-        topPanel.add(refreshButton);
-
-        centerPanel.add(topPanel, BorderLayout.NORTH);
-
-        // Right Panel (Product Details Form)
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayout(9, 2));
-
-        JLabel label = new JLabel("Enter Product Details");
-        label.setFont(new Font("Arial", Font.BOLD, 18));
-        rightPanel.add(label);
-
-        rightPanel.add(new JLabel("Product Code:"));
-        productCodeField = new JTextField();
-        rightPanel.add(productCodeField);
-
-        rightPanel.add(new JLabel("Product Name:"));
-        productNameField = new JTextField();
-        rightPanel.add(productNameField);
-
-        rightPanel.add(new JLabel("Date:"));
-        dateField = new JTextField();
-        rightPanel.add(dateField);
-
-        rightPanel.add(new JLabel("Quantity:"));
-        quantityField = new JTextField();
-        rightPanel.add(quantityField);
-
-        rightPanel.add(new JLabel("Cost Price:"));
-        costField = new JTextField();
-        rightPanel.add(costField);
-
-        rightPanel.add(new JLabel("Selling Price:"));
-        sellingField = new JTextField();
-        rightPanel.add(sellingField);
-
-        rightPanel.add(new JLabel("Brand:"));
-        brandCombo = new JComboBox<>(new String[]{"Dell", "HP", "Apple", "Samsung"});
-        rightPanel.add(brandCombo);
-
-        rightPanel.add(new JLabel("Supplier:"));
-        supplierCombo = new JComboBox<>(new String[]{"Dell Inc.", "HP Corp.", "Apple Ltd."});
-        rightPanel.add(supplierCombo);
-
-        // Buttons
-        addButton = new JButton("Add");
-        rightPanel.add(addButton);
-
-        editButton = new JButton("Edit");
-        rightPanel.add(editButton);
-
-        deleteButton = new JButton("Delete");
-        rightPanel.add(deleteButton);
-
-        clearButton = new JButton("Clear");
-        rightPanel.add(clearButton);
-
-        centerPanel.add(rightPanel, BorderLayout.EAST);
-
-        frame.add(centerPanel, BorderLayout.CENTER);
-
-        // Action Listeners
-        addButton.addActionListener(new ActionListener() {
+        // Button Actions
+        homeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Add product logic
+                switchToPanel("Home");
             }
         });
 
-        editButton.addActionListener(new ActionListener() {
+        productButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Edit product logic
+                switchToPanel("Products");
             }
         });
 
-        deleteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Delete product logic
-            }
-        });
-
-        clearButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Clear form fields
-                productCodeField.setText("");
-                productNameField.setText("");
-                dateField.setText("");
-                quantityField.setText("");
-                costField.setText("");
-                sellingField.setText("");
-            }
-        });
-
-        // Set frame visible
+        // Show Frame
         frame.setVisible(true);
     }
 
+    // Method to Create Home Panel
+    private void createHomePanel() {
+        homePanel = new JPanel();
+        homePanel.setLayout(null); // Use null layout for custom positioning
+        homePanel.setBackground(new Color(230, 220, 250)); // Light purple background
+
+        JLabel welcomeLabel = new JLabel("Welcome to Warehouse Inventory System", SwingConstants.CENTER);
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        welcomeLabel.setForeground(new Color(100, 50, 150)); // Dark purple text
+        welcomeLabel.setBounds(100, 200, 600, 50);
+        homePanel.add(welcomeLabel);
+    }
+
+    // Method to Create Product Panel
+    private void createProductPanel() {
+        productPanel = new JPanel();
+        productPanel.setLayout(null);
+        productPanel.setBackground(new Color(230, 220, 250)); // Light purple background
+
+        JLabel titleLabel = new JLabel("PRODUCT DETAILS");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setBounds(20, 20, 300, 30);
+        productPanel.add(titleLabel);
+
+        // Labels and TextFields
+        String[] labels = {"Product Code:", "Product Name:", "Date:", "Quantity:", "Cost Price:", "Selling Price:", "Brand:"};
+        int y = 70;
+        for (String label : labels) {
+            JLabel lbl = new JLabel(label);
+            lbl.setBounds(20, y, 100, 20);
+            productPanel.add(lbl);
+
+            JTextField textField = new JTextField();
+            textField.setBounds(130, y, 130, 20);
+            productPanel.add(textField);
+
+            y += 40;
+        }
+
+        // Buttons
+        JButton addButton = new JButton("Add");
+        JButton editButton = new JButton("Edit");
+        JButton deleteButton = new JButton("Delete");
+        JButton clearButton = new JButton("Clear");
+
+        addButton.setBounds(20, y, 80, 25);
+        editButton.setBounds(110, y, 80, 25);
+        deleteButton.setBounds(200, y, 80, 25);
+        clearButton.setBounds(290, y, 80, 25);
+
+        productPanel.add(addButton);
+        productPanel.add(editButton);
+        productPanel.add(deleteButton);
+        productPanel.add(clearButton);
+    }
+
+    // Method to Switch Panels
+    private void switchToPanel(String panelName) {
+        CardLayout cl = (CardLayout) mainPanel.getLayout();
+        cl.show(mainPanel, panelName);
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new InventoryDashboard();
-            }
-        });
+        SwingUtilities.invokeLater(() -> new InventoryDashboard());
     }
 }

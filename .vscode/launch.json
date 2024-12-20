@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ProductPanel",
+            "request": "launch",
+            "mainClass": "gui.ProductPanel",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
             "name": "InventoryDashboard",
             "request": "launch",
             "mainClass": "gui.InventoryDashboard",
