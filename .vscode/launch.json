@@ -6,6 +6,34 @@
     "configurations": [
         {
             "type": "java",
+            "name": "InventoryDashboard",
+            "request": "launch",
+            "mainClass": "InventoryDashboard",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "SignInSignUpSystem",
+            "request": "launch",
+            "mainClass": "SignInSignUpSystem",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "ProductManagementGUI",
+            "request": "launch",
+            "mainClass": "ProductManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "ProductManagementGUI",
+            "request": "launch",
+            "mainClass": "gui.ProductManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
             "name": "ProductPanel",
             "request": "launch",
             "mainClass": "gui.ProductPanel",
