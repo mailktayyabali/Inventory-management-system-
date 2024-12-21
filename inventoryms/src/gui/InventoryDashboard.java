@@ -1,4 +1,5 @@
 package gui;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -26,6 +27,15 @@ public class InventoryDashboard extends JFrame {
         mainContent.setFont(new Font("Arial", Font.PLAIN, 20));
         mainContentPanel.add(mainContent, "Welcome");
 
+        // Add user management GUI panel
+        UserManagementGUI userGUI = new UserManagementGUI();
+        mainContentPanel.add(userGUI, "Users");
+
+        // Add product management GUI panel
+        ProductManagementGUI productGUI = new ProductManagementGUI();
+        mainContentPanel.add(productGUI, "Products");
+
+        // Adding mainContentPanel to the frame
         add(mainContentPanel, BorderLayout.CENTER);
     }
 
@@ -55,9 +65,10 @@ public class InventoryDashboard extends JFrame {
 
             switch (buttonText) {
                 case "Products":
-                    ProductManagementGUI productGUI = new ProductManagementGUI();
-                    mainContentPanel.add(productGUI, "Products");
                     cardLayout.show(mainContentPanel, "Products");
+                    break;
+                case "Users":
+                    cardLayout.show(mainContentPanel, "Users");
                     break;
                 default:
                     JOptionPane.showMessageDialog(InventoryDashboard.this, "Feature for " + buttonText + " coming soon!");

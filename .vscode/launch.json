@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UserManagementGUI",
+            "request": "launch",
+            "mainClass": "gui.UserManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
             "name": "InventoryDashboard",
             "request": "launch",
             "mainClass": "InventoryDashboard",
