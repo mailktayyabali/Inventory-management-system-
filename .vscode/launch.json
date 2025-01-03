@@ -6,6 +6,55 @@
     "configurations": [
         {
             "type": "java",
+            "name": "SignInSystem",
+            "request": "launch",
+            "mainClass": "gui.SignInSystem",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "OrderManagementGUI",
+            "request": "launch",
+            "mainClass": "gui.OrderManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "CustomersManagementGUI",
+            "request": "launch",
+            "mainClass": "gui.CustomersManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "SaleManagementGUI",
+            "request": "launch",
+            "mainClass": "gui.SaleManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "CurrentStockGUI",
+            "request": "launch",
+            "mainClass": "gui.CurrentStockGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "CurrentStockGUI",
+            "request": "launch",
+            "mainClass": "CurrentStockGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "SupplierManagementGUI",
+            "request": "launch",
+            "mainClass": "SupplierManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
             "name": "UserManagementGUI",
             "request": "launch",
             "mainClass": "gui.UserManagementGUI",

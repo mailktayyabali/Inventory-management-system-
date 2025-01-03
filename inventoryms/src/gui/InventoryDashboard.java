@@ -1,5 +1,4 @@
 package gui;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -34,7 +33,18 @@ public class InventoryDashboard extends JFrame {
         // Add product management GUI panel
         ProductManagementGUI productGUI = new ProductManagementGUI();
         mainContentPanel.add(productGUI, "Products");
+        // Add Category management GUI panal 
+        CategoryManagementGUI categoryGUI = new CategoryManagementGUI();
+        mainContentPanel.add(categoryGUI, "Category");
 
+        SupplierManagementGUI supplierGUI = new SupplierManagementGUI();
+        mainContentPanel.add(supplierGUI, "Suppliers");
+        CurrentStockGUI currentStockGUI = new CurrentStockGUI();
+        mainContentPanel.add(currentStockGUI, "Current Stock");
+        SaleManagementGUI salesGUI = new SaleManagementGUI();
+        mainContentPanel.add(salesGUI, "Sales");
+        CustomersManagementGUI customersGUI = new CustomersManagementGUI();
+        mainContentPanel.add(customersGUI, "Customers");
         // Adding mainContentPanel to the frame
         add(mainContentPanel, BorderLayout.CENTER);
     }
@@ -45,7 +55,7 @@ public class InventoryDashboard extends JFrame {
         sidebar.setBackground(Color.LIGHT_GRAY);
 
         // Sidebar buttons
-        String[] buttons = {"Home", "Products", "Current Stock", "Customers", "Suppliers", "Sales", "Purchase", "Users"};
+        String[] buttons = {"Category", "Products", "Current Stock", "Customers", "Suppliers", "Sales", "Purchase", "Users"};
         for (String button : buttons) {
             JButton btn = new JButton(button);
             btn.setBackground(Color.LIGHT_GRAY);
@@ -69,6 +79,21 @@ public class InventoryDashboard extends JFrame {
                     break;
                 case "Users":
                     cardLayout.show(mainContentPanel, "Users");
+                    break;
+                case "Category":
+                    cardLayout.show(mainContentPanel, "Category");
+                    break;
+                case "Suppliers":
+                    cardLayout.show(mainContentPanel, "Suppliers");
+                    break;
+                case "Current Stock":
+                    cardLayout.show(mainContentPanel, "Current Stock");
+                    break;
+                case "Sales":
+                    cardLayout.show(mainContentPanel, "Sales");
+                    break;
+                case "Customers":
+                    cardLayout.show(mainContentPanel, "Customers");
                     break;
                 default:
                     JOptionPane.showMessageDialog(InventoryDashboard.this, "Feature for " + buttonText + " coming soon!");
