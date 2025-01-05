@@ -1,10 +1,16 @@
 package gui;
 
+import Backend.User;
+import DB.UserDAO;
+
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.sql.SQLException;
+import java.util.List;
 
 public class UserManagementGUI extends JPanel {
     private JTextField searchField;
@@ -12,8 +18,12 @@ public class UserManagementGUI extends JPanel {
     private DefaultTableModel tableModel;
     private JTextField userIDField, nameField, addressField, contactNumberField, usernameField;
     private JPasswordField passwordField; // Use JPasswordField for security
+    private UserDAO userDAO; // UserDAO instance for database operations
 
     public UserManagementGUI() {
+        // Initialize UserDAO
+        userDAO = new UserDAO();
+
         setLayout(new BorderLayout());
 
         // Create UI components
@@ -37,7 +47,18 @@ public class UserManagementGUI extends JPanel {
         addressField = new JTextField();
         contactNumberField = new JTextField();
         usernameField = new JTextField();
-        passwordField = new JPasswordField(); // For security, use JPasswordField
+        passwordField = new JPasswordField();
+
+        // Add KeyListener to restrict userIDField to numeric input
+        userIDField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!Character.isDigit(c) && c != '\b') {
+                    e.consume(); // Ignore non-numeric input
+                }
+            }
+        });
 
         inputPanel.add(new JLabel("User ID:"));
         inputPanel.add(userIDField);
@@ -77,10 +98,29 @@ public class UserManagementGUI extends JPanel {
         deleteButton.addActionListener(new DeleteButtonListener());
         clearButton.addActionListener(e -> clearFields());
 
+        // Add a ListSelectionListener to populate input fields when a table row is selected
+        userTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                int selectedRow = userTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    userIDField.setText(tableModel.getValueAt(selectedRow, 0).toString());
+                    nameField.setText(tableModel.getValueAt(selectedRow, 1).toString());
+                    addressField.setText(tableModel.getValueAt(selectedRow, 2).toString());
+                    contactNumberField.setText(tableModel.getValueAt(selectedRow, 3).toString());
+                    usernameField.setText(tableModel.getValueAt(selectedRow, 4).toString());
+                    passwordField.setText(tableModel.getValueAt(selectedRow, 5).toString());
+                }
+            }
+        });
+
         // Add components to panel
         add(topPanel, BorderLayout.NORTH);
         add(tableScrollPane, BorderLayout.CENTER);
         add(rightScrollPane, BorderLayout.EAST);
+
+        // Load initial data from the database
+        loadUsersFromDatabase();
     }
 
     private void clearFields() {
@@ -90,6 +130,25 @@ public class UserManagementGUI extends JPanel {
         contactNumberField.setText("");
         usernameField.setText("");
         passwordField.setText("");
+    }
+
+    private void loadUsersFromDatabase() {
+        try {
+            List<User> users = userDAO.getAllUsers();
+            tableModel.setRowCount(0); // Clear the table
+            for (User user : users) {
+                tableModel.addRow(new Object[]{
+                        user.getuserid(),
+                        user.getname(),
+                        user.getaddress(),
+                        user.getcontactNumber(),
+                        user.getusername(),
+                        user.getpassword()
+                });
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error loading users: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private class SearchButtonListener implements ActionListener {
@@ -112,18 +171,41 @@ public class UserManagementGUI extends JPanel {
     private class AddButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Get user details from input fields
-            String userID = userIDField.getText();
-            String name = nameField.getText();
-            String address = addressField.getText();
-            String contactNumber = contactNumberField.getText();
-            String username = usernameField.getText();
-            String password = new String(passwordField.getPassword());
+            try {
+                String userIDText = userIDField.getText().trim();
+                String nameText = nameField.getText().trim();
+            
+                String addressText = addressField.getText().trim();
+                String contactNumberText = contactNumberField.getText().trim();
+                String usernameText = usernameField.getText().trim();
+                String passwordText = new String(passwordField.getPassword());
+                if (userIDText.isEmpty() || !userIDText.matches("\\d+")|| nameText.isEmpty() || addressText.isEmpty() || contactNumberText.isEmpty() || !contactNumberText.matches("\\d{11}") || usernameText.isEmpty() || passwordText.isEmpty()) {
+                    JOptionPane.showMessageDialog(UserManagementGUI.this, "Filled in all fields correctly.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
-            // Add user details to the table
-            tableModel.addRow(new Object[]{userID, name, address, contactNumber, username, password});
-            JOptionPane.showMessageDialog(UserManagementGUI.this, "User added successfully!");
-            clearFields();
+                User newUser = new User(
+                        usernameField.getText(),
+                        new String(passwordField.getPassword()),
+                        Integer.parseInt(userIDText),
+                        nameField.getText(),
+                        addressField.getText(),
+                        contactNumberField.getText()
+                );
+                userDAO.addUser(newUser);
+                tableModel.addRow(new Object[]{
+                        newUser.getuserid(),
+                        newUser.getname(),
+                        newUser.getaddress(),
+                        newUser.getcontactNumber(),
+                        newUser.getusername(),
+                        newUser.getpassword()
+                });
+                JOptionPane.showMessageDialog(UserManagementGUI.this, "User added successfully!");
+                clearFields();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(UserManagementGUI.this, "Error adding user: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -132,30 +214,73 @@ public class UserManagementGUI extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int selectedRow = userTable.getSelectedRow();
             if (selectedRow != -1) {
-                // Update user details in the table
-                tableModel.setValueAt(userIDField.getText(), selectedRow, 0);
-                tableModel.setValueAt(nameField.getText(), selectedRow, 1);
-                tableModel.setValueAt(addressField.getText(), selectedRow, 2);
-                tableModel.setValueAt(contactNumberField.getText(), selectedRow, 3);
-                tableModel.setValueAt(usernameField.getText(), selectedRow, 4);
-                tableModel.setValueAt(new String(passwordField.getPassword()), selectedRow, 5);
-
-                JOptionPane.showMessageDialog(UserManagementGUI.this, "User updated successfully!");
-                clearFields();
+                try {
+                    String userIDText = userIDField.getText().trim();
+                    String nameText = nameField.getText().trim();
+                    String addressText = addressField.getText().trim();
+                    String contactNumberText = contactNumberField.getText().trim();
+                    String usernameText = usernameField.getText().trim();
+                    String passwordText = new String(passwordField.getPassword());
+    
+                    // Validate inputs
+                    if (userIDText.isEmpty() || !userIDText.matches("\\d+")
+                            || nameText.isEmpty() || addressText.isEmpty()
+                            || contactNumberText.isEmpty() || usernameText.isEmpty()
+                            || passwordText.isEmpty()) {
+                        JOptionPane.showMessageDialog(UserManagementGUI.this,
+                                "Please fill in all fields correctly.", "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+    
+                    // Create updated User object
+                    User updatedUser = new User(
+                            usernameText,
+                            passwordText,
+                            Integer.parseInt(userIDText),
+                            nameText,
+                            addressText,
+                            contactNumberText
+                    );
+    
+                    // Update in the database
+                    userDAO.updateUser(updatedUser);
+    
+                    // Reload table data
+                    loadUsersFromDatabase();
+    
+                    // Reselect the row
+                    userTable.setRowSelectionInterval(selectedRow, selectedRow);
+    
+                    JOptionPane.showMessageDialog(UserManagementGUI.this,
+                            "User updated successfully!");
+                    clearFields();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(UserManagementGUI.this,
+                            "Error updating user: " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
-                JOptionPane.showMessageDialog(UserManagementGUI.this, "Please select a user to edit.");
+                JOptionPane.showMessageDialog(UserManagementGUI.this,
+                        "Please select a user to edit.");
             }
         }
     }
+    
 
     private class DeleteButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             int selectedRow = userTable.getSelectedRow();
             if (selectedRow != -1) {
-                // Remove user from the table
-                tableModel.removeRow(selectedRow);
-                JOptionPane.showMessageDialog(UserManagementGUI.this, "User deleted successfully!");
+                int userID = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+                try {
+                    userDAO.deleteUser(userID);
+                    tableModel.removeRow(selectedRow);
+                    JOptionPane.showMessageDialog(UserManagementGUI.this, "User deleted successfully!");
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(UserManagementGUI.this, "Error deleting user: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(UserManagementGUI.this, "Please select a user to delete.");
             }

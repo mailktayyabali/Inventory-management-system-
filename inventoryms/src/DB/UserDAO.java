@@ -7,9 +7,8 @@ import java.util.List;
 import Backend.User;
 
 public class UserDAO {
-    // Add a user to the database
     public void addUser(User user) throws SQLException {
-        String query = "INSERT INTO users (user_id, name, address, contact_number, username, password) VALUES (?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO users (userid, name, address, contact_number, username, password) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, user.getuserid());
@@ -21,10 +20,8 @@ public class UserDAO {
             stmt.executeUpdate();
         }
     }
-
-    // Update user details
     public void updateUser(User user) throws SQLException {
-        String query = "UPDATE users SET name = ?, address = ?, contact_number = ?, username = ?, password = ? WHERE user_id = ?";
+        String query = "UPDATE users SET name = ?, address = ?, contact_number = ?, username = ?, password = ? WHERE userid = ?";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, user.getname());
@@ -36,20 +33,16 @@ public class UserDAO {
             stmt.executeUpdate();
         }
     }
-
-    // Delete a user by ID
     public void deleteUser(int userID) throws SQLException {
-        String query = "DELETE FROM users WHERE user_id = ?";
+        String query = "DELETE FROM users WHERE userid = ?";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, userID);
             stmt.executeUpdate();
         }
     }
-
-    // Retrieve a user by ID
     public User getUserByID(int userID) throws SQLException {
-        String query = "SELECT * FROM users WHERE user_id = ?";
+        String query = "SELECT * FROM users WHERE userid = ?";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, userID);
@@ -58,7 +51,7 @@ public class UserDAO {
                 return new User(
                         rs.getString("username"),
                         rs.getString("password"),
-                        rs.getInt("user_id"),
+                        rs.getInt("userid"),
                         rs.getString("name"),
                         rs.getString("address"),
                         rs.getString("contact_number")
@@ -67,8 +60,6 @@ public class UserDAO {
         }
         return null; // Return null if the user is not found
     }
-
-    // Retrieve all users from the database
     public List<User> getAllUsers() throws SQLException {
         String query = "SELECT * FROM users";
         List<User> users = new ArrayList<>();
@@ -79,7 +70,7 @@ public class UserDAO {
                 users.add(new User(
                         rs.getString("username"),
                         rs.getString("password"),
-                        rs.getInt("user_id"),
+                        rs.getInt("userid"),
                         rs.getString("name"),
                         rs.getString("address"),
                         rs.getString("contact_number")
@@ -88,8 +79,6 @@ public class UserDAO {
         }
         return users;
     }
-
-    // Check if a user exists (useful for login)
     public boolean validateUser(String username, String password) throws SQLException {
         String query = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (Connection conn = DBconnection.getConnection();
