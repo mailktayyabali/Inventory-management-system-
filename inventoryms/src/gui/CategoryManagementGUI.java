@@ -1,18 +1,24 @@
 package gui;
 
+import Backend.Category;
+import DB.CategoryDAO;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
 public class CategoryManagementGUI extends JPanel {
     private JTextField searchField;
     private JTable categoryTable;
     private DefaultTableModel tableModel;
     private JTextField categoryIDField, categoryNameField;
+    private final CategoryDAO categoryDAO;
 
     public CategoryManagementGUI() {
+        categoryDAO = new CategoryDAO();
         setLayout(new BorderLayout());
 
         // Create UI components
@@ -68,6 +74,20 @@ public class CategoryManagementGUI extends JPanel {
         add(topPanel, BorderLayout.NORTH);
         add(tableScrollPane, BorderLayout.CENTER);
         add(rightScrollPane, BorderLayout.EAST);
+
+        // Load initial data
+        loadCategoryData();
+    }
+
+    private void loadCategoryData() {
+        try {
+            tableModel.setRowCount(0); // Clear existing data
+            for (Category category : categoryDAO.getAllCategories()) {
+                tableModel.addRow(new Object[]{category.getCategoryID(), category.getCategoryName()});
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error loading categories: " + e.getMessage());
+        }
     }
 
     private void clearFields() {
@@ -79,15 +99,19 @@ public class CategoryManagementGUI extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             String searchTerm = searchField.getText().trim().toLowerCase();
+            boolean found = false;
             for (int i = 0; i < tableModel.getRowCount(); i++) {
                 String categoryID = tableModel.getValueAt(i, 0).toString().toLowerCase();
                 String categoryName = tableModel.getValueAt(i, 1).toString().toLowerCase();
                 if (categoryID.contains(searchTerm) || categoryName.contains(searchTerm)) {
                     categoryTable.setRowSelectionInterval(i, i);
+                    found = true;
                     break;
-                } else {
-                    categoryTable.clearSelection();
                 }
+            }
+            if (!found) {
+                JOptionPane.showMessageDialog(CategoryManagementGUI.this, "No matching category found.");
+                categoryTable.clearSelection();
             }
         }
     }
@@ -95,14 +119,23 @@ public class CategoryManagementGUI extends JPanel {
     private class AddButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Get category details from input fields
-            String categoryID = categoryIDField.getText();
-            String categoryName = categoryNameField.getText();
+            String categoryID = categoryIDField.getText().trim();
+            String categoryName = categoryNameField.getText().trim();
 
-            // Add category details to the table
-            tableModel.addRow(new Object[]{categoryID, categoryName});
-            JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Category added successfully!");
-            clearFields();
+            if (categoryID.isEmpty() || categoryName.isEmpty()) {
+                JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Please fill in all fields.");
+                return;
+            }
+
+            try {
+                Category category = new Category(categoryID, categoryName);
+                categoryDAO.addCategory(category);
+                tableModel.addRow(new Object[]{category.getCategoryID(), category.getCategoryName()});
+                JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Category added successfully!");
+                clearFields();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Error adding category: " + ex.getMessage());
+            }
         }
     }
 
@@ -111,12 +144,27 @@ public class CategoryManagementGUI extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int selectedRow = categoryTable.getSelectedRow();
             if (selectedRow != -1) {
-                // Update category details in the table
-                tableModel.setValueAt(categoryIDField.getText(), selectedRow, 0);
-                tableModel.setValueAt(categoryNameField.getText(), selectedRow, 1);
+                String categoryID = categoryIDField.getText().trim();
+                String categoryName = categoryNameField.getText().trim();
 
-                JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Category updated successfully!");
-                clearFields();
+                if (categoryID.isEmpty() || categoryName.isEmpty()) {
+                    JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Please fill in all fields.");
+                    return;
+                }
+
+                try {
+                    Category category = new Category(categoryID, categoryName);
+                    categoryDAO.updateCategory(category);
+
+                    // Update table model
+                    tableModel.setValueAt(category.getCategoryID(), selectedRow, 0);
+                    tableModel.setValueAt(category.getCategoryName(), selectedRow, 1);
+
+                    JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Category updated successfully!");
+                    clearFields();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Error updating category: " + ex.getMessage());
+                }
             } else {
                 JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Please select a category to edit.");
             }
@@ -128,9 +176,16 @@ public class CategoryManagementGUI extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int selectedRow = categoryTable.getSelectedRow();
             if (selectedRow != -1) {
-                // Remove category from the table
-                tableModel.removeRow(selectedRow);
-                JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Category deleted successfully!");
+                String categoryID = tableModel.getValueAt(selectedRow, 0).toString();
+                try {
+                    categoryDAO.deleteCategory(categoryID);
+
+                    // Remove category from the table
+                    tableModel.removeRow(selectedRow);
+                    JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Category deleted successfully!");
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Error deleting category: " + ex.getMessage());
+                }
             } else {
                 JOptionPane.showMessageDialog(CategoryManagementGUI.this, "Please select a category to delete.");
             }
@@ -141,7 +196,7 @@ public class CategoryManagementGUI extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Category Management");
             frame.setContentPane(new CategoryManagementGUI());
-            frame.setSize(600, 400);
+            frame.setSize(800, 600);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);

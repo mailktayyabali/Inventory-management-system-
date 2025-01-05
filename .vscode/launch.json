@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CategoryManagementGUI",
+            "request": "launch",
+            "mainClass": "gui.CategoryManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
             "name": "SignInSystem",
             "request": "launch",
             "mainClass": "gui.SignInSystem",

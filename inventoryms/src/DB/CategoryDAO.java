@@ -6,7 +6,7 @@ import Backend.Category;
 
 public class CategoryDAO {
     public void addCategory(Category category) throws SQLException {
-        String query = "INSERT INTO categories (category_id, category_name) VALUES (?, ?)";
+        String query = "INSERT INTO category (category_id, category_name) VALUES (?, ?)";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, category.getCategoryID());
@@ -15,7 +15,7 @@ public class CategoryDAO {
         }
     }
     public void deleteCategory(String categoryID) throws SQLException {
-        String query = "DELETE FROM categories WHERE category_id = ?";
+        String query = "DELETE FROM category WHERE category_id = ?";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, categoryID);
@@ -23,7 +23,7 @@ public class CategoryDAO {
         }
     }
     public void updateCategory(Category category) throws SQLException {
-        String query = "UPDATE categories SET category_name = ? WHERE category_id = ?";
+        String query = "UPDATE category SET category_name = ? WHERE category_id = ?";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, category.getCategoryName());
@@ -32,7 +32,7 @@ public class CategoryDAO {
         }
     }
     public List<Category> getAllCategories() throws SQLException {
-        String query = "SELECT * FROM categories";
+        String query = "SELECT * FROM category";
         List<Category> categories = new ArrayList<>();
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -45,5 +45,19 @@ public class CategoryDAO {
             }
         }
         return categories;
+    }
+    public Category getCategory(String categoryID) throws SQLException{
+        String query="SELECT *FROM category WHERE category_id=?";
+        try( Connection conn =DBconnection.getConnection();)
+        {
+            PreparedStatement statement =conn.prepareStatement(query);
+            statement.setString(1, categoryID);
+            ResultSet resultSet =statement.executeQuery();
+            if(resultSet.next())
+            {
+                return new Category(resultSet.getString("category_id"), resultSet.getString("category_name"));
+            }
+            return null;
+        }
     }
 }
