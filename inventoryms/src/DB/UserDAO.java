@@ -58,7 +58,7 @@ public class UserDAO {
                 );
             }
         }
-        return null; // Return null if the user is not found
+        return null; 
     }
     public List<User> getAllUsers() throws SQLException {
         String query = "SELECT * FROM users";
@@ -86,7 +86,7 @@ public class UserDAO {
             stmt.setString(1, username);
             stmt.setString(2, password);
             ResultSet rs = stmt.executeQuery();
-            return rs.next(); // If a match is found, the user exists
+            return rs.next();
         }
     }
 }

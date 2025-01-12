@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "PointOfSaleGUI",
+            "request": "launch",
+            "mainClass": "gui.PointOfSaleGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
+            "name": "PurchaseManagementGUI",
+            "request": "launch",
+            "mainClass": "gui.PurchaseManagementGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
             "name": "CategoryManagementGUI",
             "request": "launch",
             "mainClass": "gui.CategoryManagementGUI",

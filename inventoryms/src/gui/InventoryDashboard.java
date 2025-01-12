@@ -31,7 +31,7 @@ public class InventoryDashboard extends JFrame {
         mainContentPanel.add(userGUI, "Users");
 
         // Add product management GUI panel
-        ProductManagementGUI productGUI = new ProductManagementGUI();
+       ProductManagementGUI productGUI= new ProductManagementGUI();
         mainContentPanel.add(productGUI, "Products");
         // Add Category management GUI panal 
         CategoryManagementGUI categoryGUI = new CategoryManagementGUI();
@@ -45,6 +45,8 @@ public class InventoryDashboard extends JFrame {
         mainContentPanel.add(salesGUI, "Sales");
         CustomersManagementGUI customersGUI = new CustomersManagementGUI();
         mainContentPanel.add(customersGUI, "Customers");
+        PurchaseManagementGUI purchaseManagementGUI = new PurchaseManagementGUI();
+        mainContentPanel.add(purchaseManagementGUI, "Purchase");
         // Adding mainContentPanel to the frame
         add(mainContentPanel, BorderLayout.CENTER);
     }
@@ -94,6 +96,9 @@ public class InventoryDashboard extends JFrame {
                     break;
                 case "Customers":
                     cardLayout.show(mainContentPanel, "Customers");
+                    break;
+                case "Purchase":
+                    cardLayout.show(mainContentPanel, "Purchase");
                     break;
                 default:
                     JOptionPane.showMessageDialog(InventoryDashboard.this, "Feature for " + buttonText + " coming soon!");
