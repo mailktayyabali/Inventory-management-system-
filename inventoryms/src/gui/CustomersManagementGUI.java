@@ -10,7 +10,7 @@ public class CustomersManagementGUI extends JPanel {
     private JTextField searchField;
     private JTable customerTable;
     private DefaultTableModel tableModel;
-    private JTextField customerNameField, addressField, contactField;
+    private JTextField  customerIdField,customerNameField, addressField, contactField;
 
     public CustomersManagementGUI() {
         setLayout(new BorderLayout());
@@ -25,17 +25,20 @@ public class CustomersManagementGUI extends JPanel {
         topPanel.add(searchButton);
 
         // Set up the table model and table inside a scroll pane
-        tableModel = new DefaultTableModel(new String[]{"Customer Name", "Address", "Contact"}, 0);
+        tableModel = new DefaultTableModel(new String[]{"Customer ID,Customer Name", "Address", "Contact"}, 0);
         customerTable = new JTable(tableModel);
         JScrollPane tableScrollPane = new JScrollPane(customerTable);
         tableScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
         // Create input fields
-        JPanel inputPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        customerIdField=new JTextField();
         customerNameField = new JTextField();
         addressField = new JTextField();
         contactField = new JTextField();
 
+        inputPanel.add(new JLabel("Customer ID:"));
+        inputPanel.add(customerIdField);
         inputPanel.add(new JLabel("Customer Name:"));
         inputPanel.add(customerNameField);
         inputPanel.add(new JLabel("Address:"));
@@ -44,7 +47,7 @@ public class CustomersManagementGUI extends JPanel {
         inputPanel.add(contactField);
 
         // Create button panel
-        JPanel buttonPanel = new JPanel(new GridLayout(3, 3, 10, 10)); // Adjusted layout to fit more buttons
+        JPanel buttonPanel = new JPanel(new GridLayout(3, 2, 10, 10)); // Adjusted layout to fit more buttons
         JButton addButton = new JButton("Add Customer");
         JButton editButton = new JButton("Edit Customer");
         JButton deleteButton = new JButton("Delete Customer");

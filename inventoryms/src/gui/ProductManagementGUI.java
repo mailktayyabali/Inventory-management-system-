@@ -12,12 +12,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Random;
 
 public class ProductManagementGUI extends JPanel {
     private JTextField searchField;
     private JTable productTable;
     private DefaultTableModel tableModel;
-    private JTextField productIDField, nameField, descriptionField, priceField, stockQuantityField;
+    private JTextField nameField, descriptionField, priceField, stockQuantityField;
     private JComboBox<String> categoryComboBox;
 
     private ProductDAO productDAO;
@@ -26,7 +27,7 @@ public class ProductManagementGUI extends JPanel {
     public ProductManagementGUI() {
         productDAO = new ProductDAO();
         categoryDAO = new CategoryDAO();
-        
+
         setLayout(new BorderLayout());
 
         // Create UI components
@@ -44,16 +45,13 @@ public class ProductManagementGUI extends JPanel {
         JScrollPane tableScrollPane = new JScrollPane(productTable);
 
         // Create input fields
-        JPanel inputPanel = new JPanel(new GridLayout(6, 2, 10, 10));
-        productIDField = new JTextField();
+        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         nameField = new JTextField();
         descriptionField = new JTextField();
         priceField = new JTextField();
         stockQuantityField = new JTextField();
         categoryComboBox = new JComboBox<>();
 
-        inputPanel.add(new JLabel("Product ID:")); 
-        inputPanel.add(productIDField);
         inputPanel.add(new JLabel("Name:"));
         inputPanel.add(nameField);
         inputPanel.add(new JLabel("Description:"));
@@ -66,16 +64,18 @@ public class ProductManagementGUI extends JPanel {
         inputPanel.add(categoryComboBox);
 
         // Create button panel
-        JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 3, 10, 10));
         JButton addButton = new JButton("Add Product");
         JButton editButton = new JButton("Edit Product");
         JButton deleteButton = new JButton("Delete Product");
         JButton clearButton = new JButton("Clear Fields");
+        JButton refreshButton = new JButton("Refresh");
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(clearButton);
+        buttonPanel.add(refreshButton);
 
         // Create a panel that combines input fields and buttons, and make it scrollable
         JPanel rightPanel = new JPanel(new BorderLayout());
@@ -89,6 +89,27 @@ public class ProductManagementGUI extends JPanel {
         editButton.addActionListener(new EditButtonListener());
         deleteButton.addActionListener(new DeleteButtonListener());
         clearButton.addActionListener(e -> clearFields());
+        refreshButton.addActionListener(new RefreshButtonListener());
+
+        // Add row selection listener to the table
+        productTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && productTable.getSelectedRow() != -1) {
+                int selectedRow = productTable.getSelectedRow();
+
+                // Populate fields
+                String name = tableModel.getValueAt(selectedRow, 1).toString();
+                String description = tableModel.getValueAt(selectedRow, 2).toString();
+                String price = tableModel.getValueAt(selectedRow, 3).toString();
+                String stockQuantity = tableModel.getValueAt(selectedRow, 4).toString();
+                String categoryName = tableModel.getValueAt(selectedRow, 5).toString();
+
+                nameField.setText(name);
+                descriptionField.setText(description);
+                priceField.setText(price);
+                stockQuantityField.setText(stockQuantity);
+                categoryComboBox.setSelectedItem(categoryName);
+            }
+        });
 
         // Load categories dynamically
         loadCategories();
@@ -103,7 +124,6 @@ public class ProductManagementGUI extends JPanel {
     }
 
     private void clearFields() {
-        productIDField.setText("");
         nameField.setText("");
         descriptionField.setText("");
         priceField.setText("");
@@ -142,6 +162,38 @@ public class ProductManagementGUI extends JPanel {
         }
     }
 
+    private boolean validateFields() {
+        if (nameField.getText().trim().isEmpty() ||
+                descriptionField.getText().trim().isEmpty() ||
+                priceField.getText().trim().isEmpty() ||
+                stockQuantityField.getText().trim().isEmpty() ||
+                categoryComboBox.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "All fields must be filled.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        try {
+            Double.parseDouble(priceField.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Price must be a valid decimal number.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        try {
+            Integer.parseInt(stockQuantityField.getText().trim());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Stock Quantity must be an integer.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        return true;
+    }
+
+    private String generateSixDigitID() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000)); // Generate a number between 000000 and 999999
+    }
+
     private class SearchButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -169,39 +221,28 @@ public class ProductManagementGUI extends JPanel {
     private class AddButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (!validateFields()) return;
+
             try {
-                String productID = productIDField.getText().trim();
+                // Generate a random 6-digit Product ID
+                String productID = generateSixDigitID();
                 String name = nameField.getText().trim();
                 String description = descriptionField.getText().trim();
                 double price = Double.parseDouble(priceField.getText().trim());
                 int stockQuantity = Integer.parseInt(stockQuantityField.getText().trim());
                 String categoryName = categoryComboBox.getSelectedItem().toString();
-    
-                if (productID.isEmpty() || name.isEmpty() || description.isEmpty() || categoryName.isEmpty()) {
-                    JOptionPane.showMessageDialog(ProductManagementGUI.this, "All fields must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-    
-                // Debugging log
-                System.out.println("Adding Product: " + productID + ", " + name);
-    
+
                 Product product = new Product(productID, name, description, price, stockQuantity, categoryName);
                 productDAO.addProduct(product);
-    
-                // Debugging log
-                System.out.println("Product Added Successfully!");
-    
-                loadProducts();  // Reload the products
+
+                loadProducts();
                 JOptionPane.showMessageDialog(ProductManagementGUI.this, "Product added successfully!");
                 clearFields();
-            } catch (SQLException | NumberFormatException ex) {
-                // Debugging log
-                System.out.println("Error: " + ex.getMessage());
+            } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(ProductManagementGUI.this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
-    
 
     private class EditButtonListener implements ActionListener {
         @Override
@@ -212,25 +253,23 @@ public class ProductManagementGUI extends JPanel {
                 return;
             }
 
+            if (!validateFields()) return;
+
             try {
-                String productID = productIDField.getText().trim();
+                String productID = tableModel.getValueAt(selectedRow, 0).toString();
                 String name = nameField.getText().trim();
                 String description = descriptionField.getText().trim();
                 double price = Double.parseDouble(priceField.getText().trim());
                 int stockQuantity = Integer.parseInt(stockQuantityField.getText().trim());
                 String categoryName = categoryComboBox.getSelectedItem().toString();
 
-                if (productID.isEmpty() || name.isEmpty() || description.isEmpty() || categoryName.isEmpty()) {
-                    JOptionPane.showMessageDialog(ProductManagementGUI.this, "All fields must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
                 Product product = new Product(productID, name, description, price, stockQuantity, categoryName);
                 productDAO.updateProduct(product);
+
                 loadProducts();
                 JOptionPane.showMessageDialog(ProductManagementGUI.this, "Product updated successfully!");
                 clearFields();
-            } catch (SQLException | NumberFormatException ex) {
+            } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(ProductManagementGUI.this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -253,6 +292,15 @@ public class ProductManagementGUI extends JPanel {
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(ProductManagementGUI.this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+
+    private class RefreshButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            loadProducts();
+            loadCategories();
+            JOptionPane.showMessageDialog(ProductManagementGUI.this, "Data refreshed successfully!");
         }
     }
 

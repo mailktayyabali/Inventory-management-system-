@@ -1,53 +1,66 @@
 package gui;
 
+import Backend.Supplier;
+import DB.SupplierDAO;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Random;
 
 public class SupplierManagementGUI extends JPanel {
     private JTextField searchField;
     private JTable supplierTable;
     private DefaultTableModel tableModel;
-    private JTextField supplierNameField, contactField, productField;
-    private JComboBox<String> paymentStatusComboBox;
+    private JTextField supplierNameField, productField, contactField;
+    private JCheckBox paidStatusField, pendingStatusField;  // Two checkboxes: Paid and Pending
+    private SupplierDAO supplierDAO;
 
     public SupplierManagementGUI() {
+        // Initialize SupplierDAO
+        supplierDAO = new SupplierDAO();
+
         setLayout(new BorderLayout());
 
-        // Create UI components
+        // Top panel with search functionality
         JPanel topPanel = new JPanel(new FlowLayout());
-        JLabel searchLabel = new JLabel("Search by Name/Product:");
+        JLabel searchLabel = new JLabel("Search by Name/ID:");
         searchField = new JTextField(15);
         JButton searchButton = new JButton("Search");
+        JButton refreshButton = new JButton("Refresh Data");
         topPanel.add(searchLabel);
         topPanel.add(searchField);
         topPanel.add(searchButton);
+        topPanel.add(refreshButton);
 
-        // Set up the table model and table inside a scroll pane
-        tableModel = new DefaultTableModel(new String[]{"Supplier Name", "Contact", "Product", "Payment Status"}, 0);
+        // Set up the table model and table
+        tableModel = new DefaultTableModel(new String[]{"Supplier ID", "Name", "Product", "Contact", "Payment Status"}, 0);
         supplierTable = new JTable(tableModel);
-        JScrollPane tableScrollPane = new JScrollPane(supplierTable); // Adding table to scroll pane
-        tableScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Always show vertical scroll bar
+        JScrollPane tableScrollPane = new JScrollPane(supplierTable);
 
-        // Create input fields
-        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        // Input fields for adding/editing suppliers
+        JPanel inputPanel = new JPanel(new GridLayout(7, 2, 10, 10));  // Updated layout to accommodate 2 checkboxes
         supplierNameField = new JTextField();
-        contactField = new JTextField();
         productField = new JTextField();
-        paymentStatusComboBox = new JComboBox<>(new String[]{"Paid", "Pending", "Overdue"});
+        contactField = new JTextField();
+        paidStatusField = new JCheckBox("Paid");
+        pendingStatusField = new JCheckBox("Pending");
 
         inputPanel.add(new JLabel("Supplier Name:"));
         inputPanel.add(supplierNameField);
-        inputPanel.add(new JLabel("Contact:"));
-        inputPanel.add(contactField);
         inputPanel.add(new JLabel("Product:"));
         inputPanel.add(productField);
+        inputPanel.add(new JLabel("Contact:"));
+        inputPanel.add(contactField);
         inputPanel.add(new JLabel("Payment Status:"));
-        inputPanel.add(paymentStatusComboBox);
+        inputPanel.add(paidStatusField);
+        inputPanel.add(new JLabel("Pending Status:"));
+        inputPanel.add(pendingStatusField);
 
-        // Create button panel
+        // Buttons for operations
         JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         JButton addButton = new JButton("Add Supplier");
         JButton editButton = new JButton("Edit Supplier");
@@ -59,62 +72,120 @@ public class SupplierManagementGUI extends JPanel {
         buttonPanel.add(deleteButton);
         buttonPanel.add(clearButton);
 
-        // Create a panel that combines input fields and buttons, and make it scrollable
+        // Combine input fields and buttons
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(inputPanel, BorderLayout.NORTH);
         rightPanel.add(buttonPanel, BorderLayout.SOUTH);
         JScrollPane rightScrollPane = new JScrollPane(rightPanel);
 
-        // Add action listeners
+        // Action listeners for buttons
         searchButton.addActionListener(new SearchButtonListener());
+        refreshButton.addActionListener(e -> loadSuppliersFromDatabase()); // Refresh data
         addButton.addActionListener(new AddButtonListener());
         editButton.addActionListener(new EditButtonListener());
         deleteButton.addActionListener(new DeleteButtonListener());
         clearButton.addActionListener(e -> clearFields());
 
-        // Add components to panel
+        // Populate fields on table row selection
+        supplierTable.getSelectionModel().addListSelectionListener(e -> {
+            int selectedRow = supplierTable.getSelectedRow();
+            if (selectedRow != -1) {
+                supplierNameField.setText(tableModel.getValueAt(selectedRow, 1).toString());
+                productField.setText(tableModel.getValueAt(selectedRow, 2).toString());
+                contactField.setText(tableModel.getValueAt(selectedRow, 3).toString());
+                String paymentStatus = tableModel.getValueAt(selectedRow, 4).toString();
+                paidStatusField.setSelected(paymentStatus.equals("Paid"));
+                pendingStatusField.setSelected(paymentStatus.equals("Pending"));
+            }
+        });
+
+        // Add components to the main panel
         add(topPanel, BorderLayout.NORTH);
-        add(tableScrollPane, BorderLayout.CENTER); // Add scroll pane instead of the table directly
+        add(tableScrollPane, BorderLayout.CENTER);
         add(rightScrollPane, BorderLayout.EAST);
+
+        // Load initial supplier data
+        loadSuppliersFromDatabase();
     }
 
     private void clearFields() {
         supplierNameField.setText("");
-        contactField.setText("");
         productField.setText("");
-        paymentStatusComboBox.setSelectedIndex(0);
+        contactField.setText("");
+        paidStatusField.setSelected(false);
+        pendingStatusField.setSelected(false);
+        supplierTable.clearSelection(); // Clear table selection
     }
 
-    private class SearchButtonListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String searchTerm = searchField.getText().trim().toLowerCase();
-            for (int i = 0; i < tableModel.getRowCount(); i++) {
-                String supplierName = tableModel.getValueAt(i, 0).toString().toLowerCase();
-                String product = tableModel.getValueAt(i, 2).toString().toLowerCase();
-                if (supplierName.contains(searchTerm) || product.contains(searchTerm)) {
-                    supplierTable.setRowSelectionInterval(i, i);
-                    break;
-                } else {
-                    supplierTable.clearSelection();
-                }
+    private void loadSuppliersFromDatabase() {
+        try {
+            List<Supplier> suppliers = supplierDAO.getAllSuppliers();
+            tableModel.setRowCount(0); // Clear the table
+            for (Supplier supplier : suppliers) {
+                tableModel.addRow(new Object[]{
+                        supplier.getSupplierID(),
+                        supplier.getSupplierName(),
+                        supplier.getProduct(),
+                        supplier.getContact(),
+                        supplier.getPaymentStatus()
+                });
             }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error loading suppliers: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private String generateAutoSupplierID() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(999999)); // Generate 6-digit ID
     }
 
     private class AddButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Get supplier details from input fields
-            String supplierName = supplierNameField.getText();
-            String contact = contactField.getText();
-            String product = productField.getText();
-            String paymentStatus = paymentStatusComboBox.getSelectedItem().toString();
+            try {
+                String supplierNameText = supplierNameField.getText().trim();
+                String productText = productField.getText().trim();
+                String contactText = contactField.getText().trim();
+                boolean paidStatus = paidStatusField.isSelected();
+                boolean pendingStatus = pendingStatusField.isSelected();
 
-            // Add supplier details to the table
-            tableModel.addRow(new Object[]{supplierName, contact, product, paymentStatus});
-            JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Supplier added successfully!");
-            clearFields();
+                if (supplierNameText.isEmpty() || productText.isEmpty() || contactText.isEmpty() || !contactText.matches("\\d{11}")) {
+                    JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please fill in all fields correctly.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Ensure that only one checkbox (Paid or Pending) is selected
+                if (paidStatus && pendingStatus) {
+                    JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please select only one payment status (Paid or Pending).", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String paymentStatus = paidStatus ? "Paid" : (pendingStatus ? "Pending" : "Unpaid");
+
+                String newSupplierID = generateAutoSupplierID(); // Generate a new 6-digit ID
+
+                Supplier newSupplier = new Supplier(
+                        Integer.parseInt(newSupplierID),
+                        supplierNameText,
+                        contactText,
+                        productText,
+                        paymentStatus
+                );
+
+                supplierDAO.addSupplier(newSupplier);
+                tableModel.addRow(new Object[]{
+                        newSupplier.getSupplierID(),
+                        newSupplier.getSupplierName(),
+                        newSupplier.getProduct(),
+                        newSupplier.getContact(),
+                        newSupplier.getPaymentStatus()
+                });
+                JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Supplier added successfully!");
+                clearFields();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Error adding supplier: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -123,14 +194,42 @@ public class SupplierManagementGUI extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int selectedRow = supplierTable.getSelectedRow();
             if (selectedRow != -1) {
-                // Update supplier details in the table
-                tableModel.setValueAt(supplierNameField.getText(), selectedRow, 0);
-                tableModel.setValueAt(contactField.getText(), selectedRow, 1);
-                tableModel.setValueAt(productField.getText(), selectedRow, 2);
-                tableModel.setValueAt(paymentStatusComboBox.getSelectedItem().toString(), selectedRow, 3);
+                try {
+                    String supplierNameText = supplierNameField.getText().trim();
+                    String productText = productField.getText().trim();
+                    String contactText = contactField.getText().trim();
+                    boolean paidStatus = paidStatusField.isSelected();
+                    boolean pendingStatus = pendingStatusField.isSelected();
 
-                JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Supplier updated successfully!");
-                clearFields();
+                    if (supplierNameText.isEmpty() || productText.isEmpty() || contactText.isEmpty() || !contactText.matches("\\d{11}")) {
+                        JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please fill in all fields correctly.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Ensure that only one checkbox (Paid or Pending) is selected
+                    if (paidStatus && pendingStatus) {
+                        JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please select only one payment status (Paid or Pending).", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    String paymentStatus = paidStatus ? "Paid" : (pendingStatus ? "Pending" : "Unpaid");
+
+                    Supplier updatedSupplier = new Supplier(
+                            Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString()),
+                            supplierNameText,
+                            contactText,
+                            productText,
+                            paymentStatus
+                    );
+
+                    supplierDAO.updateSupplier(updatedSupplier);
+                    loadSuppliersFromDatabase();
+                    supplierTable.setRowSelectionInterval(selectedRow, selectedRow);
+                    JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Supplier updated successfully!");
+                    clearFields();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Error updating supplier: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please select a supplier to edit.");
             }
@@ -142,11 +241,49 @@ public class SupplierManagementGUI extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int selectedRow = supplierTable.getSelectedRow();
             if (selectedRow != -1) {
-                // Remove supplier from the table
-                tableModel.removeRow(selectedRow);
-                JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Supplier deleted successfully!");
+                int confirmation = JOptionPane.showConfirmDialog(SupplierManagementGUI.this,
+                        "Are you sure you want to delete this supplier?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+                if (confirmation == JOptionPane.YES_OPTION) {
+                    try {
+                        int supplierID = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+                        supplierDAO.deleteSupplier(supplierID);
+                        tableModel.removeRow(selectedRow);
+                        JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Supplier deleted successfully!");
+                        clearFields();
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Error deleting supplier: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             } else {
                 JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please select a supplier to delete.");
+            }
+        }
+    }
+
+    private class SearchButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String searchTerm = searchField.getText().trim().toLowerCase();
+            if (searchTerm.isEmpty()) {
+                JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please enter a name or ID to search.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            boolean found = false;
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                String supplierID = tableModel.getValueAt(i, 0).toString().toLowerCase();
+                String name = tableModel.getValueAt(i, 1).toString().toLowerCase();
+
+                if (supplierID.contains(searchTerm) || name.contains(searchTerm)) {
+                    supplierTable.setRowSelectionInterval(i, i);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                JOptionPane.showMessageDialog(SupplierManagementGUI.this, "No supplier found with the given search term.", "Search Result", JOptionPane.INFORMATION_MESSAGE);
+                supplierTable.clearSelection();
             }
         }
     }
@@ -155,7 +292,7 @@ public class SupplierManagementGUI extends JPanel {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Supplier Management");
             frame.setContentPane(new SupplierManagementGUI());
-            frame.setSize(600, 400);
+            frame.setSize(1000, 600);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
