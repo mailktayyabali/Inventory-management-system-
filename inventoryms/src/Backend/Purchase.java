@@ -1,16 +1,22 @@
 package Backend;
 
 public class Purchase {
+    int PurchaseId;
     String ProductName;
     int Quantity;
     double PurchasePrice;
     double SalePrice;
-    public void Purchase(String ProductName, int Quantity, double PurchasePrice, double SalePrice) {
+    public void Purchase(int PurchaseId,String ProductName, int Quantity, double PurchasePrice, double SalePrice) {
+        this.PurchaseId=PurchaseId;
         this.ProductName = ProductName;
         this.Quantity = Quantity;
         this.PurchasePrice = PurchasePrice;
         this.SalePrice = SalePrice;
     }
+    public int getPurchaseId(){
+        return PurchaseId;
+    }
+    
     public String getProductName() {
         return ProductName;
     }

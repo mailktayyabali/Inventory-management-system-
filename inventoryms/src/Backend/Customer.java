@@ -11,8 +11,16 @@ public class Customer {
         this.address=address;
         this.contact=contact;
     }
-    public int getConnectionID(){
+    public int getCustomerID(){
         return customerID;
     }
-    
+    public String getCustomerName(){
+        return customerName;
+    }
+    public String getAddress(){
+        return address;
+    }
+    public String getconnect(){
+        return contact;
+    }
 }

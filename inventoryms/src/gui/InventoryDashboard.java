@@ -39,14 +39,14 @@ public class InventoryDashboard extends JFrame {
 
         SupplierManagementGUI supplierGUI = new SupplierManagementGUI();
         mainContentPanel.add(supplierGUI, "Suppliers");
-        CurrentStockGUI currentStockGUI = new CurrentStockGUI();
-        mainContentPanel.add(currentStockGUI, "Current Stock");
+        
         SaleManagementGUI salesGUI = new SaleManagementGUI();
         mainContentPanel.add(salesGUI, "Sales");
         CustomersManagementGUI customersGUI = new CustomersManagementGUI();
         mainContentPanel.add(customersGUI, "Customers");
         PurchaseManagementGUI purchaseManagementGUI = new PurchaseManagementGUI();
         mainContentPanel.add(purchaseManagementGUI, "Purchase");
+        
         // Adding mainContentPanel to the frame
         add(mainContentPanel, BorderLayout.CENTER);
     }
@@ -57,7 +57,7 @@ public class InventoryDashboard extends JFrame {
         sidebar.setBackground(Color.LIGHT_GRAY);
 
         // Sidebar buttons
-        String[] buttons = {"Category", "Products", "Current Stock", "Customers", "Suppliers", "Sales", "Purchase", "Users"};
+        String[] buttons = {"Category", "Products", "Customers", "Suppliers", "Sales", "Purchase", "Users","Log Out"};
         for (String button : buttons) {
             JButton btn = new JButton(button);
             btn.setBackground(Color.LIGHT_GRAY);
@@ -87,9 +87,6 @@ public class InventoryDashboard extends JFrame {
                     break;
                 case "Suppliers":
                     cardLayout.show(mainContentPanel, "Suppliers");
-                    break;
-                case "Current Stock":
-                    cardLayout.show(mainContentPanel, "Current Stock");
                     break;
                 case "Sales":
                     cardLayout.show(mainContentPanel, "Sales");

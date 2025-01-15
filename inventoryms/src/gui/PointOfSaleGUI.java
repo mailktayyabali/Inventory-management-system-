@@ -14,10 +14,11 @@ public class PointOfSaleGUI extends JPanel {
     private JTextField totalAmountField;
 
     public PointOfSaleGUI() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10));
 
-        // Create top panel for invoice details
-        JPanel topPanel = new JPanel(new GridLayout(2, 4, 10, 10));
+        // Top panel for invoice details
+        JPanel topPanel = new JPanel(new GridLayout(1, 6, 10, 10));
+        topPanel.setBorder(BorderFactory.createTitledBorder("Invoice Details"));
         topPanel.add(new JLabel("Invoice #:"));
         invoiceNumberField = new JTextField();
         topPanel.add(invoiceNumberField);
@@ -29,56 +30,57 @@ public class PointOfSaleGUI extends JPanel {
         topPanel.add(customerNameField);
         add(topPanel, BorderLayout.NORTH);
 
-        // Create main panel for product details
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        // Center panel for product details and table
+        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
 
         // Product details table
         productTableModel = new DefaultTableModel(new String[]{"Code", "Product Title", "Unit", "Description", "Quantity", "Rate", "Amount"}, 0);
         productTable = new JTable(productTableModel);
-        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        JScrollPane productScrollPane = new JScrollPane(productTable);
-        mainPanel.add(productScrollPane, BorderLayout.CENTER);
-        
-        // Product entry fields
-        JPanel productEntryPanel = new JPanel(new GridLayout(2, 7, 10, 10));
+        JScrollPane tableScrollPane = new JScrollPane(productTable);
+        tableScrollPane.setBorder(BorderFactory.createTitledBorder("Products"));
+        centerPanel.add(tableScrollPane, BorderLayout.CENTER);
+
+        // Product entry panel
+        JPanel productEntryPanel = new JPanel(new GridLayout(8, 2, 10, 10));
+        productEntryPanel.setBorder(BorderFactory.createTitledBorder("Product Entry"));
+        productEntryPanel.add(new JLabel("Product Code:"));
         productCodeField = new JTextField();
-        productTitleField = new JTextField();
-        unitField = new JTextField();
-        descriptionField = new JTextField();
-        quantityField = new JTextField();
-        rateField = new JTextField();
-        amountField = new JTextField();
-        
-        productEntryPanel.add(new JLabel("Product ID:"));
         productEntryPanel.add(productCodeField);
         productEntryPanel.add(new JLabel("Product Title:"));
+        productTitleField = new JTextField();
         productEntryPanel.add(productTitleField);
         productEntryPanel.add(new JLabel("Unit:"));
+        unitField = new JTextField();
         productEntryPanel.add(unitField);
         productEntryPanel.add(new JLabel("Description:"));
+        descriptionField = new JTextField();
         productEntryPanel.add(descriptionField);
         productEntryPanel.add(new JLabel("Quantity:"));
+        quantityField = new JTextField();
         productEntryPanel.add(quantityField);
         productEntryPanel.add(new JLabel("Rate:"));
+        rateField = new JTextField();
         productEntryPanel.add(rateField);
         productEntryPanel.add(new JLabel("Amount:"));
+        amountField = new JTextField();
         productEntryPanel.add(amountField);
+        centerPanel.add(productEntryPanel, BorderLayout.EAST);
 
-        mainPanel.add(productEntryPanel, BorderLayout.SOUTH);
-        add(mainPanel, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
 
-        // Create bottom panel for total amount and action buttons
-        JPanel bottomPanel = new JPanel(new BorderLayout());
+        // Bottom panel for total and buttons
+        JPanel bottomPanel = new JPanel(new BorderLayout(10, 10));
 
-        // Total amount
+        // Total amount panel
         JPanel totalPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         totalPanel.add(new JLabel("Total Amount:"));
         totalAmountField = new JTextField(10);
+        totalAmountField.setEditable(false);
         totalPanel.add(totalAmountField);
         bottomPanel.add(totalPanel, BorderLayout.NORTH);
 
-        // Action buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // Button panel
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 7, 10, 10));
         JButton newButton = new JButton("New");
         JButton savePreviewButton = new JButton("Save Preview");
         JButton searchButton = new JButton("Search");
@@ -86,7 +88,6 @@ public class PointOfSaleGUI extends JPanel {
         JButton refreshButton = new JButton("Refresh");
         JButton exitButton = new JButton("Exit");
         JButton deleteButton = new JButton("Delete");
-
         buttonPanel.add(newButton);
         buttonPanel.add(savePreviewButton);
         buttonPanel.add(searchButton);
@@ -94,20 +95,20 @@ public class PointOfSaleGUI extends JPanel {
         buttonPanel.add(refreshButton);
         buttonPanel.add(exitButton);
         buttonPanel.add(deleteButton);
-
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // Add action listeners for buttons
+        // Action listeners for buttons
         newButton.addActionListener(new NewButtonListener());
         savePreviewButton.addActionListener(new SavePreviewButtonListener());
         searchButton.addActionListener(new SearchButtonListener());
         printPreviewButton.addActionListener(new PrintPreviewButtonListener());
-        refreshButton.addActionListener(new RefreshButtonListener());
+        refreshButton.addActionListener(e -> clearFields());
         exitButton.addActionListener(e -> System.exit(0));
         deleteButton.addActionListener(new DeleteButtonListener());
 
-        // Calculate total amount whenever a product is added or updated
+        // Calculate total amount whenever the product table is updated
         productTableModel.addTableModelListener(e -> calculateTotalAmount());
     }
 
@@ -121,7 +122,6 @@ public class PointOfSaleGUI extends JPanel {
     private class SavePreviewButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Implement the functionality to save and preview the invoice
             JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Save Preview button clicked.");
         }
     }
@@ -129,7 +129,6 @@ public class PointOfSaleGUI extends JPanel {
     private class SearchButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Implement the functionality to search for invoices
             JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Search button clicked.");
         }
     }
@@ -137,15 +136,7 @@ public class PointOfSaleGUI extends JPanel {
     private class PrintPreviewButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            // Implement the functionality to print preview the invoice
             JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Print Preview button clicked.");
-        }
-    }
-
-    private class RefreshButtonListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            clearFields();
         }
     }
 
@@ -179,17 +170,21 @@ public class PointOfSaleGUI extends JPanel {
     private void calculateTotalAmount() {
         double totalAmount = 0.0;
         for (int i = 0; i < productTableModel.getRowCount(); i++) {
-            double amount = (double) productTableModel.getValueAt(i, 6);
-            totalAmount += amount;
+            try {
+                double amount = Double.parseDouble(productTableModel.getValueAt(i, 6).toString());
+                totalAmount += amount;
+            } catch (NumberFormatException | NullPointerException ex) {
+                // Ignore invalid or empty amount values
+            }
         }
-        totalAmountField.setText(String.valueOf(totalAmount));
+        totalAmountField.setText(String.format("%.2f", totalAmount));
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Point of Sale");
             frame.setContentPane(new PointOfSaleGUI());
-            frame.setSize(1000, 600);
+            frame.setSize(1200, 700);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
