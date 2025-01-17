@@ -20,7 +20,7 @@ public class Customer {
     public String getAddress(){
         return address;
     }
-    public String getconnect(){
+    public String getcontact(){
         return contact;
     }
 }

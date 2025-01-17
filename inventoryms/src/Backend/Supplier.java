@@ -4,15 +4,15 @@ public class Supplier {
     private int supplierID; // Assuming suppliers have a unique ID
     private String supplierName;
     private String contact;
-    private String product;
-    private String paymentStatus;
+    private String address;
+   
 
-    public Supplier(int supplierID, String supplierName, String contact, String product, String paymentStatus) {
+    public Supplier(int supplierID, String supplierName, String contact, String address) {
         this.supplierID = supplierID;
         this.supplierName = supplierName;
         this.contact = contact;
-        this.product = product;
-        this.paymentStatus = paymentStatus;
+        this.address = address;
+        
     }
 
     // Getters and Setters
@@ -40,19 +40,13 @@ public class Supplier {
         this.contact = contact;
     }
 
-    public String getProduct() {
-        return product;
+    public String getAddress() {
+        return address;
     }
 
-    public void setProduct(String product) {
-        this.product = product;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public String getPaymentStatus() {
-        return paymentStatus;
-    }
-
-    public void setPaymentStatus(String paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
+    
 }

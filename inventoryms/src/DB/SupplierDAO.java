@@ -10,14 +10,14 @@ public class SupplierDAO {
 
     // Create a new supplier in the database
     public void addSupplier(Supplier supplier) throws SQLException {
-        String query = "INSERT INTO suppliers (supplier_id,supplier_name, contact, product, payment_status) VALUES (?, ?, ?, ?,?)";
+        String query = "INSERT INTO suppliers (supplier_id,supplier_name, contact, address) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, supplier.getSupplierID());
             stmt.setString(2, supplier.getSupplierName());
             stmt.setString(3, supplier.getContact());
-            stmt.setString(4, supplier.getProduct());
-            stmt.setString(5, supplier.getPaymentStatus());
+            stmt.setString(4, supplier.getAddress());
+            
             stmt.executeUpdate();
         }
     }
@@ -34,8 +34,8 @@ public class SupplierDAO {
                         rs.getInt("supplier_id"),
                         rs.getString("supplier_name"),
                         rs.getString("contact"),
-                        rs.getString("product"),
-                        rs.getString("payment_status")
+                        rs.getString("address")
+                       
                 );
                 suppliers.add(supplier);
             }
@@ -45,14 +45,14 @@ public class SupplierDAO {
 
     // Update an existing supplier in the database
     public void updateSupplier(Supplier supplier) throws SQLException {
-        String query = "UPDATE suppliers SET supplier_name = ?, contact = ?, product = ?, payment_status = ? WHERE supplier_id = ?";
+        String query = "UPDATE suppliers SET supplier_name = ?, contact = ?, address = ? WHERE supplier_id = ?";
         try (Connection conn = DBconnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, supplier.getSupplierID());
-            stmt.setString(2, supplier.getSupplierName());
-            stmt.setString(3, supplier.getContact());
-            stmt.setString(4, supplier.getProduct());
-            stmt.setString(5, supplier.getPaymentStatus());
+                 stmt.setString(1, supplier.getSupplierName());
+                 stmt.setString(2, supplier.getContact());
+                 stmt.setString(3, supplier.getAddress());
+                 stmt.setInt(4, supplier.getSupplierID());
+            
             
             stmt.executeUpdate();
         }

@@ -42,7 +42,7 @@ public class InventoryDashboard extends JFrame {
         
         SaleManagementGUI salesGUI = new SaleManagementGUI();
         mainContentPanel.add(salesGUI, "Sales");
-        CustomersManagementGUI customersGUI = new CustomersManagementGUI();
+        CustomerGUI customersGUI = new CustomerGUI();
         mainContentPanel.add(customersGUI, "Customers");
         PurchaseManagementGUI purchaseManagementGUI = new PurchaseManagementGUI();
         mainContentPanel.add(purchaseManagementGUI, "Purchase");
@@ -57,7 +57,7 @@ public class InventoryDashboard extends JFrame {
         sidebar.setBackground(Color.LIGHT_GRAY);
 
         // Sidebar buttons
-        String[] buttons = {"Category", "Products", "Customers", "Suppliers", "Sales", "Purchase", "Users","Log Out"};
+        String[] buttons = {"Category", "Products", "Customers", "Suppliers", "Purchase", "Users","POS","Log Out"};
         for (String button : buttons) {
             JButton btn = new JButton(button);
             btn.setBackground(Color.LIGHT_GRAY);

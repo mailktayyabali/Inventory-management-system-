@@ -15,9 +15,8 @@ public class SupplierManagementGUI extends JPanel {
     private JTextField searchField;
     private JTable supplierTable;
     private DefaultTableModel tableModel;
-    private JTextField supplierNameField, productField, contactField;
-    private JCheckBox paidStatusField, pendingStatusField;  // Two checkboxes: Paid and Pending
-    private SupplierDAO supplierDAO;
+    private JTextField supplierNameField, addressField, contactField;
+      private SupplierDAO supplierDAO;
 
     public SupplierManagementGUI() {
         // Initialize SupplierDAO
@@ -37,28 +36,24 @@ public class SupplierManagementGUI extends JPanel {
         topPanel.add(refreshButton);
 
         // Set up the table model and table
-        tableModel = new DefaultTableModel(new String[]{"Supplier ID", "Name", "Product", "Contact", "Payment Status"}, 0);
+        tableModel = new DefaultTableModel(new String[]{"Supplier ID", "Name", "Address", "Contact"}, 0);
         supplierTable = new JTable(tableModel);
         JScrollPane tableScrollPane = new JScrollPane(supplierTable);
 
         // Input fields for adding/editing suppliers
         JPanel inputPanel = new JPanel(new GridLayout(7, 2, 10, 10));  // Updated layout to accommodate 2 checkboxes
         supplierNameField = new JTextField();
-        productField = new JTextField();
+        addressField = new JTextField();
         contactField = new JTextField();
-        paidStatusField = new JCheckBox("Paid");
-        pendingStatusField = new JCheckBox("Pending");
+        
 
         inputPanel.add(new JLabel("Supplier Name:"));
         inputPanel.add(supplierNameField);
-        inputPanel.add(new JLabel("Product:"));
-        inputPanel.add(productField);
+        inputPanel.add(new JLabel("Address:"));
+        inputPanel.add(addressField);
         inputPanel.add(new JLabel("Contact:"));
         inputPanel.add(contactField);
-        inputPanel.add(new JLabel("Payment Status:"));
-        inputPanel.add(paidStatusField);
-        inputPanel.add(new JLabel("Pending Status:"));
-        inputPanel.add(pendingStatusField);
+        
 
         // Buttons for operations
         JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
@@ -91,11 +86,9 @@ public class SupplierManagementGUI extends JPanel {
             int selectedRow = supplierTable.getSelectedRow();
             if (selectedRow != -1) {
                 supplierNameField.setText(tableModel.getValueAt(selectedRow, 1).toString());
-                productField.setText(tableModel.getValueAt(selectedRow, 2).toString());
+                addressField.setText(tableModel.getValueAt(selectedRow, 2).toString());
                 contactField.setText(tableModel.getValueAt(selectedRow, 3).toString());
-                String paymentStatus = tableModel.getValueAt(selectedRow, 4).toString();
-                paidStatusField.setSelected(paymentStatus.equals("Paid"));
-                pendingStatusField.setSelected(paymentStatus.equals("Pending"));
+                
             }
         });
 
@@ -110,10 +103,9 @@ public class SupplierManagementGUI extends JPanel {
 
     private void clearFields() {
         supplierNameField.setText("");
-        productField.setText("");
+        addressField.setText("");
         contactField.setText("");
-        paidStatusField.setSelected(false);
-        pendingStatusField.setSelected(false);
+        
         supplierTable.clearSelection(); // Clear table selection
     }
 
@@ -125,9 +117,9 @@ public class SupplierManagementGUI extends JPanel {
                 tableModel.addRow(new Object[]{
                         supplier.getSupplierID(),
                         supplier.getSupplierName(),
-                        supplier.getProduct(),
-                        supplier.getContact(),
-                        supplier.getPaymentStatus()
+                        supplier.getAddress(),
+                        supplier.getContact()
+                        
                 });
             }
         } catch (SQLException e) {
@@ -145,41 +137,32 @@ public class SupplierManagementGUI extends JPanel {
         public void actionPerformed(ActionEvent e) {
             try {
                 String supplierNameText = supplierNameField.getText().trim();
-                String productText = productField.getText().trim();
+                String addressText = addressField.getText().trim();
                 String contactText = contactField.getText().trim();
-                boolean paidStatus = paidStatusField.isSelected();
-                boolean pendingStatus = pendingStatusField.isSelected();
-
-                if (supplierNameText.isEmpty() || productText.isEmpty() || contactText.isEmpty() || !contactText.matches("\\d{11}")) {
+                
+                if (supplierNameText.isEmpty() || addressText.isEmpty() || contactText.isEmpty() || !contactText.matches("\\d{11}")) {
                     JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please fill in all fields correctly.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 // Ensure that only one checkbox (Paid or Pending) is selected
-                if (paidStatus && pendingStatus) {
-                    JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please select only one payment status (Paid or Pending).", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                String paymentStatus = paidStatus ? "Paid" : (pendingStatus ? "Pending" : "Unpaid");
-
+                
+                
                 String newSupplierID = generateAutoSupplierID(); // Generate a new 6-digit ID
 
                 Supplier newSupplier = new Supplier(
                         Integer.parseInt(newSupplierID),
                         supplierNameText,
                         contactText,
-                        productText,
-                        paymentStatus
+                        addressText
                 );
 
                 supplierDAO.addSupplier(newSupplier);
                 tableModel.addRow(new Object[]{
                         newSupplier.getSupplierID(),
                         newSupplier.getSupplierName(),
-                        newSupplier.getProduct(),
-                        newSupplier.getContact(),
-                        newSupplier.getPaymentStatus()
+                        newSupplier.getAddress(),
+                        newSupplier.getContact()
                 });
                 JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Supplier added successfully!");
                 clearFields();
@@ -196,30 +179,21 @@ public class SupplierManagementGUI extends JPanel {
             if (selectedRow != -1) {
                 try {
                     String supplierNameText = supplierNameField.getText().trim();
-                    String productText = productField.getText().trim();
+                    String addressText = addressField.getText().trim();
                     String contactText = contactField.getText().trim();
-                    boolean paidStatus = paidStatusField.isSelected();
-                    boolean pendingStatus = pendingStatusField.isSelected();
-
-                    if (supplierNameText.isEmpty() || productText.isEmpty() || contactText.isEmpty() || !contactText.matches("\\d{11}")) {
+                    
+                    if (supplierNameText.isEmpty() || addressText.isEmpty() || contactText.isEmpty() || !contactText.matches("\\d{11}")) {
                         JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please fill in all fields correctly.", "Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
 
                     // Ensure that only one checkbox (Paid or Pending) is selected
-                    if (paidStatus && pendingStatus) {
-                        JOptionPane.showMessageDialog(SupplierManagementGUI.this, "Please select only one payment status (Paid or Pending).", "Error", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
-
-                    String paymentStatus = paidStatus ? "Paid" : (pendingStatus ? "Pending" : "Unpaid");
-
+                    
                     Supplier updatedSupplier = new Supplier(
                             Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString()),
                             supplierNameText,
                             contactText,
-                            productText,
-                            paymentStatus
+                            addressText
                     );
 
                     supplierDAO.updateSupplier(updatedSupplier);

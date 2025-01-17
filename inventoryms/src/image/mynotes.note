@@ -1,0 +1,11 @@
+CREATE TABLE Purchase (
+    purchase_id INT AUTO_INCREMENT PRIMARY KEY, -- Unique identifier for each purchase
+    product_name VARCHAR(100) NOT NULL,         -- Name of the purchased product
+    quantity INT NOT NULL,                      -- Quantity of the product purchased
+    purchase_price DECIMAL(10, 2) NOT NULL,        -- Total price of the purchase
+    sale_price DECIMAL(10, 2) NOT NULL,
+    supplier_id INT,                            -- ID of the supplier (foreign key)
+    FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id) -- Link to Supplier table
+    ON DELETE CASCADE                           -- Deletes purchases if supplier is deleted
+    ON UPDATE CASCADE                           -- Updates supplier_id in Purchase if changed in Supplier
+);

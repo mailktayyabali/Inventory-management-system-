@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CustomerGUI",
+            "request": "launch",
+            "mainClass": "gui.CustomerGUI",
+            "projectName": "oopProject_565dbc23"
+        },
+        {
+            "type": "java",
             "name": "SupplierManagementGUI",
             "request": "launch",
             "mainClass": "gui.SupplierManagementGUI",
