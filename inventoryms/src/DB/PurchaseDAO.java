@@ -7,7 +7,7 @@ import java.util.List;
 
 public class PurchaseDAO {
 
-    // Retrieve all purchase items with supplier information
+    
     public List<Purchase> getAllPurchaseItems() throws SQLException {
         List<Purchase> purchaseItems = new ArrayList<>();
         String query = "SELECT pi.purchase_id, pi.product_name, pi.quantity, pi.purchase_price, pi.sale_price, s.supplier_name " +
@@ -29,7 +29,7 @@ public class PurchaseDAO {
         return purchaseItems;
     }
 
-    // Add a new purchase item to the database
+    
     public void addPurchase(Purchase purchaseItem) throws SQLException {
         String query = "INSERT INTO purchase_items (purchase_id,product_name, quantity, purchase_price, sale_price, supplier_id) " +
                        "VALUES (?,?, ?, ?, ?, (SELECT supplier_id FROM suppliers WHERE supplier_name = ?))";
@@ -40,12 +40,12 @@ public class PurchaseDAO {
             stmt.setInt(3, purchaseItem.getQuantity());
             stmt.setDouble(4, purchaseItem.getPurchasePrice());
             stmt.setDouble(5, purchaseItem.getSalePrice());
-            stmt.setString(6, purchaseItem.getSupplierName());  // Get supplier by product's supplier name
+            stmt.setString(6, purchaseItem.getSupplierName());  
             stmt.executeUpdate();
         }
     }
 
-    // Update an existing purchase item in the database
+    
     public void updatePurchase(Purchase purchaseItem) throws SQLException {
         String query = "UPDATE purchase_items SET product_name = ?, quantity = ?, purchase_price = ?, sale_price = ?, " +
                        "supplier_id = (SELECT supplier_id FROM suppliers WHERE supplier_name = ?) " +
@@ -62,7 +62,7 @@ public class PurchaseDAO {
         }
     }
 
-    // Delete a purchase item from the database
+    
     public void deletePurchase(String purchaseID) throws SQLException {
         String query = "DELETE FROM purchase_items WHERE purchase_id = ?";
         try (Connection conn = DBconnection.getConnection();
@@ -71,4 +71,22 @@ public class PurchaseDAO {
             stmt.executeUpdate();
         }
     }
+    public void updateProductQuantity(String productID, int quantitySold) throws SQLException {
+        String query = "UPDATE products SET quantity = quantity - ? WHERE product_id = ?";
+
+        try (Connection conn = DBconnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, quantitySold);  // Quantity sold to be subtracted from stock
+            stmt.setString(2, productID);  // Product ID for the product whose stock needs to be updated
+
+            // Execute the update query
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new SQLException("Failed to update product quantity. Product not found or insufficient stock.");
+            }
+        }
+    }
+
 }

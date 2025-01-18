@@ -9,3 +9,67 @@ CREATE TABLE Purchase (
     ON DELETE CASCADE                           -- Deletes purchases if supplier is deleted
     ON UPDATE CASCADE                           -- Updates supplier_id in Purchase if changed in Supplier
 );
+
+invoice schema 
+
+CREATE TABLE Invoice (
+    invoice_id INT PRIMARY KEY AUTO_INCREMENT,
+    invoice_number VARCHAR(50) NOT NULL UNIQUE,
+    invoice_date DATETIME NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,  -- Store only the customer name
+    product_id INT NOT NULL,  -- Foreign key referencing the product
+    product_name VARCHAR(100) NOT NULL,  -- Name of the product
+    product_description TEXT,  -- Description of the product
+    quantity INT NOT NULL,  -- Quantity of the product
+    rate DECIMAL(10, 2) NOT NULL,  -- Price per unit of the product
+    amount DECIMAL(10, 2) NOT NULL,  -- Calculated as quantity * rate
+    total_amount DECIMAL(10, 2) NOT NULL,  -- Sum of all product amounts in the invoice
+    FOREIGN KEY (product_id) 
+        REFERENCES Products(product_id) 
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (customer_id) 
+        REFERENCES Customers(customer_id) 
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+in one invoice it store different products detail 
+use custommer name from customer table 
+use product id name and decription from product table 
+Update stock quantity in product table when product sale in Pos
+
+-- Invoice table stores one entry per invoice
+CREATE TABLE Invoice (
+    invoice_id INT PRIMARY KEY AUTO_INCREMENT,
+    invoice_number VARCHAR(50) NOT NULL UNIQUE,
+    invoice_date DATETIME NOT NULL,
+    customer_id INT NOT NULL,  -- Foreign key referencing the customer
+    total_amount DECIMAL(10, 2) NOT NULL,  -- Sum of all product amounts in the invoice
+    FOREIGN KEY (customer_id) 
+        REFERENCES Customers(customer_id) 
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- InvoiceDetails table stores multiple product entries per invoice
+CREATE TABLE InvoiceDetails (
+    detail_id INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each detail row
+    invoice_id INT NOT NULL,  -- Foreign key referencing the Invoice table
+    product_id INT NOT NULL,  -- Foreign key referencing the Products table
+    product_name VARCHAR(100) NOT NULL,  -- Name of the product
+    product_description TEXT,  -- Description of the product
+    quantity INT NOT NULL,  -- Quantity of the product
+    rate DECIMAL(10, 2) NOT NULL,  -- Price per unit of the product
+    amount DECIMAL(10, 2) NOT NULL,  -- Calculated as quantity * rate
+    FOREIGN KEY (invoice_id) 
+        REFERENCES Invoice(invoice_id) 
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (product_id) 
+        REFERENCES Products(product_id) 
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+

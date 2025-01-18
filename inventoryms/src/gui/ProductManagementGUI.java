@@ -30,7 +30,7 @@ public class ProductManagementGUI extends JPanel {
 
         setLayout(new BorderLayout());
 
-        // Create UI components
+        
         JPanel topPanel = new JPanel(new FlowLayout());
         JLabel searchLabel = new JLabel("Search by Product Name/ID:");
         searchField = new JTextField(15);
@@ -39,12 +39,12 @@ public class ProductManagementGUI extends JPanel {
         topPanel.add(searchField);
         topPanel.add(searchButton);
 
-        // Set up the table model and table
+        
         tableModel = new DefaultTableModel(new String[]{"Product ID", "Name", "Description", "Price", "Stock Quantity", "Category Name"}, 0);
         productTable = new JTable(tableModel);
         JScrollPane tableScrollPane = new JScrollPane(productTable);
 
-        // Create input fields
+        
         JPanel inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         nameField = new JTextField();
         descriptionField = new JTextField();
@@ -63,7 +63,7 @@ public class ProductManagementGUI extends JPanel {
         inputPanel.add(new JLabel("Category Name:"));
         inputPanel.add(categoryComboBox);
 
-        // Create button panel
+        
         JPanel buttonPanel = new JPanel(new GridLayout(2, 3, 10, 10));
         JButton addButton = new JButton("Add Product");
         JButton editButton = new JButton("Edit Product");
@@ -77,13 +77,13 @@ public class ProductManagementGUI extends JPanel {
         buttonPanel.add(clearButton);
         buttonPanel.add(refreshButton);
 
-        // Create a panel that combines input fields and buttons, and make it scrollable
+        
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(inputPanel, BorderLayout.NORTH);
         rightPanel.add(buttonPanel, BorderLayout.SOUTH);
         JScrollPane rightScrollPane = new JScrollPane(rightPanel);
 
-        // Add action listeners
+        
         searchButton.addActionListener(new SearchButtonListener());
         addButton.addActionListener(new AddButtonListener());
         editButton.addActionListener(new EditButtonListener());
@@ -91,12 +91,12 @@ public class ProductManagementGUI extends JPanel {
         clearButton.addActionListener(e -> clearFields());
         refreshButton.addActionListener(new RefreshButtonListener());
 
-        // Add row selection listener to the table
+        
         productTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && productTable.getSelectedRow() != -1) {
                 int selectedRow = productTable.getSelectedRow();
 
-                // Populate fields
+                
                 String name = tableModel.getValueAt(selectedRow, 1).toString();
                 String description = tableModel.getValueAt(selectedRow, 2).toString();
                 String price = tableModel.getValueAt(selectedRow, 3).toString();
@@ -111,13 +111,13 @@ public class ProductManagementGUI extends JPanel {
             }
         });
 
-        // Load categories dynamically
+        
         loadCategories();
 
-        // Load products dynamically
+        
         loadProducts();
 
-        // Add components to panel
+        
         add(topPanel, BorderLayout.NORTH);
         add(tableScrollPane, BorderLayout.CENTER);
         add(rightScrollPane, BorderLayout.EAST);
@@ -191,7 +191,7 @@ public class ProductManagementGUI extends JPanel {
 
     private String generateSixDigitID() {
         Random random = new Random();
-        return String.format("%06d", random.nextInt(1000000)); // Generate a number between 000000 and 999999
+        return String.format("%06d", random.nextInt(1000000)); 
     }
 
     private class SearchButtonListener implements ActionListener {
@@ -224,7 +224,7 @@ public class ProductManagementGUI extends JPanel {
             if (!validateFields()) return;
 
             try {
-                // Generate a random 6-digit Product ID
+                
                 String productID = generateSixDigitID();
                 String name = nameField.getText().trim();
                 String description = descriptionField.getText().trim();

@@ -1,21 +1,37 @@
 package gui;
 
+import Backend.Pointofsale;
+import DB.InvoiceDAO;
+import Backend.Category;
+import Backend.Customer;
+import DB.CustomerDAO;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.List;
 
 public class PointOfSaleGUI extends JPanel {
-    private JTextField invoiceNumberField, invoiceDateField, customerNameField;
+    private JTextField invoiceNumberField, invoiceDateField;
+    private JComboBox<String> customerComboBox;
     private JTable productTable;
     private DefaultTableModel productTableModel;
     private JTextField productCodeField, productTitleField, unitField, descriptionField, quantityField, rateField, amountField;
     private JTextField totalAmountField;
+    private CustomerDAO customerDAO ;
+
+    private InvoiceDAO invoiceDAO = new InvoiceDAO();
 
     public PointOfSaleGUI() {
         setLayout(new BorderLayout(10, 10));
 
+        customerDAO=new CustomerDAO();
         // Top panel for invoice details
         JPanel topPanel = new JPanel(new GridLayout(1, 6, 10, 10));
         topPanel.setBorder(BorderFactory.createTitledBorder("Invoice Details"));
@@ -25,9 +41,11 @@ public class PointOfSaleGUI extends JPanel {
         topPanel.add(new JLabel("Invoice Date:"));
         invoiceDateField = new JTextField();
         topPanel.add(invoiceDateField);
-        topPanel.add(new JLabel("Customer Name:"));
-        customerNameField = new JTextField();
-        topPanel.add(customerNameField);
+        topPanel.add(new JLabel("Customer:"));
+
+        // Customer dropdown
+        customerComboBox = new JComboBox<>();
+        topPanel.add(customerComboBox);
         add(topPanel, BorderLayout.NORTH);
 
         // Center panel for product details and table
@@ -63,6 +81,7 @@ public class PointOfSaleGUI extends JPanel {
         productEntryPanel.add(rateField);
         productEntryPanel.add(new JLabel("Amount:"));
         amountField = new JTextField();
+        amountField.setEditable(false);
         productEntryPanel.add(amountField);
         centerPanel.add(productEntryPanel, BorderLayout.EAST);
 
@@ -82,7 +101,7 @@ public class PointOfSaleGUI extends JPanel {
         // Button panel
         JPanel buttonPanel = new JPanel(new GridLayout(1, 7, 10, 10));
         JButton newButton = new JButton("New");
-        JButton savePreviewButton = new JButton("Save Preview");
+        JButton savePreviewButton = new JButton("Save");
         JButton searchButton = new JButton("Search");
         JButton printPreviewButton = new JButton("Print Preview");
         JButton refreshButton = new JButton("Refresh");
@@ -101,7 +120,7 @@ public class PointOfSaleGUI extends JPanel {
 
         // Action listeners for buttons
         newButton.addActionListener(new NewButtonListener());
-        savePreviewButton.addActionListener(new SavePreviewButtonListener());
+        savePreviewButton.addActionListener(new SaveButtonListener());
         searchButton.addActionListener(new SearchButtonListener());
         printPreviewButton.addActionListener(new PrintPreviewButtonListener());
         refreshButton.addActionListener(e -> clearFields());
@@ -110,6 +129,23 @@ public class PointOfSaleGUI extends JPanel {
 
         // Calculate total amount whenever the product table is updated
         productTableModel.addTableModelListener(e -> calculateTotalAmount());
+
+        // Add calculation for amount field when quantity or rate changes
+        quantityField.addActionListener(e -> calculateProductAmount());
+        rateField.addActionListener(e -> calculateProductAmount());
+        loadCustomer();
+    }
+    private void loadCustomer(){
+        customerComboBox.removeAllItems();
+        List<Customer> customers = new ArrayList<>();
+        try {
+            customers = customerDAO.getAllCustomers();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error loading customers: " + e.getMessage());
+        }
+        for (Customer customer :customers) {
+            customerComboBox.addItem(customer.getCustomerName());
+        }
     }
 
     private class NewButtonListener implements ActionListener {
@@ -119,24 +155,63 @@ public class PointOfSaleGUI extends JPanel {
         }
     }
 
-    private class SavePreviewButtonListener implements ActionListener {
+    private class SaveButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Save Preview button clicked.");
+            try {
+                // Validate date
+                LocalDateTime invoiceDate;
+                try {
+                    invoiceDate = LocalDateTime.parse(invoiceDateField.getText());
+                } catch (DateTimeParseException ex) {
+                    JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Invalid date format. Use YYYY-MM-DDTHH:MM:SS.");
+                    return;
+                }
+
+                // Create Pointofsale object
+                Pointofsale pointOfSale = new Pointofsale(
+                        0, // Invoice ID (auto-generated by the database)
+                        invoiceNumberField.getText(),
+                        invoiceDate,
+                        1, // Placeholder for customer ID
+                        (String) customerComboBox.getSelectedItem(),
+                        productCodeField.getText(),
+                        productTitleField.getText(),
+                        descriptionField.getText(),
+                        Integer.parseInt(quantityField.getText()),
+                        Double.parseDouble(rateField.getText()),
+                        Double.parseDouble(amountField.getText()),
+                        Double.parseDouble(totalAmountField.getText())
+                );
+
+                // Save to database
+                invoiceDAO.addInvoice(pointOfSale);
+                JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Invoice saved successfully!");
+                clearFields();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Error saving invoice: " + ex.getMessage());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Invalid numeric values. Check Quantity, Rate, or Amount.");
+            }
         }
     }
 
     private class SearchButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Search button clicked.");
+            String searchQuery = JOptionPane.showInputDialog("Enter Product Code or Name:");
+            if (searchQuery != null && !searchQuery.isEmpty()) {
+                // Implement search functionality
+                // Example: Display search results in a new dialog or update the table
+                JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Search not implemented yet.");
+            }
         }
     }
 
     private class PrintPreviewButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Print Preview button clicked.");
+            JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Print Preview clicked. Implement print functionality.");
         }
     }
 
@@ -155,7 +230,7 @@ public class PointOfSaleGUI extends JPanel {
     private void clearFields() {
         invoiceNumberField.setText("");
         invoiceDateField.setText("");
-        customerNameField.setText("");
+        customerComboBox.setSelectedIndex(0);
         productCodeField.setText("");
         productTitleField.setText("");
         unitField.setText("");
@@ -167,6 +242,17 @@ public class PointOfSaleGUI extends JPanel {
         productTableModel.setRowCount(0);
     }
 
+    private void calculateProductAmount() {
+        try {
+            int quantity = Integer.parseInt(quantityField.getText());
+            double rate = Double.parseDouble(rateField.getText());
+            double amount = quantity * rate;
+            amountField.setText(String.format("%.2f", amount));
+        } catch (NumberFormatException ex) {
+            amountField.setText("");
+        }
+    }
+
     private void calculateTotalAmount() {
         double totalAmount = 0.0;
         for (int i = 0; i < productTableModel.getRowCount(); i++) {
@@ -174,7 +260,7 @@ public class PointOfSaleGUI extends JPanel {
                 double amount = Double.parseDouble(productTableModel.getValueAt(i, 6).toString());
                 totalAmount += amount;
             } catch (NumberFormatException | NullPointerException ex) {
-                // Ignore invalid or empty amount values
+                // Ignore invalid or empty values
             }
         }
         totalAmountField.setText(String.format("%.2f", totalAmount));
