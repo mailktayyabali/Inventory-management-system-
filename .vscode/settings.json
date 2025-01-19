@@ -12,6 +12,7 @@
         "e:\\All software setups\\pdfbox-app-3.0.3.jar",
         "e:\\All software setups\\fontbox-3.0.3.jar",
         "e:\\All software setups\\mysql-connector-j-9.1.0\\mysql-connector-j-9.1.0\\mysql-connector-j-9.1.0.jar"
-    ]
+    ],
+    "java.debug.settings.onBuildFailureProceed": true
 }
 

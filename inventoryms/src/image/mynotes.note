@@ -52,6 +52,7 @@ CREATE TABLE Invoice (
         ON UPDATE CASCADE
 );
 
+
 -- InvoiceDetails table stores multiple product entries per invoice
 CREATE TABLE InvoiceDetails (
     detail_id INT PRIMARY KEY AUTO_INCREMENT, -- Unique identifier for each detail row
@@ -71,5 +72,8 @@ CREATE TABLE InvoiceDetails (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+
+Duplicate product enter
 
 
