@@ -221,7 +221,6 @@ public class PointOfSaleGUI extends JPanel {
                 System.out.println("Generated invoice number: " + invoiceNumber);
     
                 // Save invoice details
-                saveInvoice(invoiceNumber, selectedCustomer);
     
                 JOptionPane.showMessageDialog(PointOfSaleGUI.this, "Invoice saved successfully!");
                 clearForm();
